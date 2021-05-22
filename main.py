@@ -9,9 +9,19 @@ def create_media():
     layout = [
         [sg.Text('Nota', size=(12,1)), sg.Input(key='nota')],
         [sg.Text('Carga Horária', size=(12,1)), sg.Input(key='carga_horaria')],
-        [sg.Button('Enviar'), sg.Button('Finalizar')]
+        [sg.Button('Enviar'), sg.Button('Finalizar'), sg.Button('Fiquei de VS')]
     ]
     return sg.Window('Calculadora de CR UFF', layout=layout, finalize=True)
+
+def calculate_vs():
+    sg.theme('DarkBlue12')
+    layout = [
+        [sg.Text('Nota', size=(12,1)), sg.Input(key='nota')],
+        [sg.Text('Nota da VS', size=(12,1)), sg.Input(key='nota_vs')],
+        [sg.Text('Carga Horária', size=(12,1)), sg.Input(key='carga_horaria')],
+        [sg.Button('Enviar')]
+    ]
+    return sg.Window('Calculadora de CR UFF com VS', layout=layout, finalize=True)
 
 def display_success(x, y):
     sg.theme('DarkBlue12')
@@ -31,14 +41,29 @@ def display_cr(x):
     ]
     return sg.Window('CR calculado', layout=layout, finalize=True)
 
-window1, window2, window3 = create_media(), None, None
+window1, window2, window3, window4 = create_media(), None, None, None
 
 # Funcionalidade
 while True:
     window, event, values = sg.read_all_windows()
     
-    if window == window1 and event == sg.WIN_CLOSED:
+    if (window == window1 or window == window2 or window == window3 or window == window4) and event == sg.WIN_CLOSED:
         break
+
+    if window == window1 and event == 'Fiquei de VS':
+        window4 = calculate_vs()
+        window1.hide()
+
+    if window == window4 and event == 'Enviar' and float(values['nota']) >= 0.0 and float(values['nota_vs']) >= 0.0 and int(values['carga_horaria']) > 0:
+        window4.hide()
+        if float(values['nota_vs']) >= 6.0:
+            window2 = display_success(6.0, int(values['carga_horaria']))
+            media = 6.0 * int(values['carga_horaria'])
+        else:
+            window2 = display_success((float(values['nota']) + float(values['nota_vs'])) / 2.0, int(values['carga_horaria']))
+            media = ((float(values['nota']) + float(values['nota_vs'])) / 2.0) * int(values['carga_horaria'])
+        medias.append(media)
+        ch_total += int(values['carga_horaria'])
 
     if window == window1 and event == 'Enviar' and float(values['nota']) >= 0.0 and int(values['carga_horaria']) > 0:
         window2 = display_success(float(values['nota']), int(values['carga_horaria']))
